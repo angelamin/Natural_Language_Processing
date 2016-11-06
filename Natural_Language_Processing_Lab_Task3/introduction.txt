@@ -1,0 +1,50 @@
+1.生成训练文件
+segment.py                       199801.txt --> outputSegment.txt           将语料分为单个的字一行，用于之后得到所有汉字的文件，其中去掉重复汉字，也去掉数字
+generateBI.py                    199801.txt --> outputPair.txt --> outputBI.txt   将语料处理成汉字 B/I的形式，以便后面根据此文件生成相应的训练文件
+generateWords.py                 outputSegment.txt -->outputWords.txt       将语料中重复的字去掉，生成几乎所有汉字
+generateVocabulary.py            outputWords.txt -->outputVocabulary.txt    语料所生成的汉字组合（两个字）因为template，即模板需要的最多是两个汉字连在一起
+generateTrainData.py             outputWords.txt outputVocabulary.txt outputBI.txt --> train.txt 通过文件字的位置、词汇的位置将outputBI中的汉字转化成训练的格式
+                                                                                        其中outputBI文件中的B和I生成第一个1/0
+                                                                                        再根据template，得到模板中八个项的位置，具体参考任务三介绍，但是任务三中介绍的稍有不妥之处
+                                                                                        因为数组第一个是0开头，
+
+
+
+
+    word_data_list  0 1 ...........4688 4689（即当元素的前／后一个或者前／后两个元素不存在的时候，用此位置顶替，避免出现向量定位在同一位置的情况）
+    len 4689(我们最后都是要用这个长度来具体抽象，以适应变化）
+
+    vocabulary_data_list 0      1 ...........21986720                         21986721(同前面)
+                        4690    4691........(21986720+len(word_data_list)+1)   (21986721+len(word_data_list)+1)
+    len 21986721
+    由于最后是将word表和vocabulary表联合来判断位置，这样相当于向量分布，不会重复
+    所以判断在vocabulary中的位置时，采用如上加上word长度的方法
+
+
+
+
+
+
+2.给一句话生成测试文件的方法
+首先，我需要利用svmlight来得到任意句子，根据我的模型来正确判断出它到底是B还是I，所以测试的时候我只需要在生成BI文件的时候我任意给定B I，我都将它设置为B
+generateTestBI.py               test.txt --> outputTestBI.txt 将任意给出的一段连续的话拆分成一个一个字，并且都在后面生成的BI模式都写成B，后续就跟之前生成训练文件是一样的了
+generateTrainData.py             outputWords.txt outputVocabulary.txt outputBI.txt --> testTrain.txt
+
+
+
+
+最后，有了测试文件和训练文件之后，我们就可以利用svmlight进行操作啦，
+详情请见svmlight文件夹下的SVM操作指南。。。。。。。
+
+
+
+
+
+
+
+
+python中遇到的问题：
+    首先，命令行容易出错，python generateWords.py(总是忘记输此处) outputWords.txt........
+
+python知识要点：
+    数组的方法：.append(*) .index(*)
